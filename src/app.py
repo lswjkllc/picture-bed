@@ -15,11 +15,11 @@ import base64
 
 app = Sanic()
 # 图片存储目录
-baseDir = os.path.join(sys.path[0], '../static/image/')
+base_dir = os.path.join(sys.path[0], '../static/image/')
 # 校验 Token 写死就成，反正自己用的嘛
 token = 'ChanEcho'
 # 允许的域名列表
-allowHost = [
+allow_host = [
             'localhost',
             'ilovethisword',
             'i.fengcss.com',
@@ -41,76 +41,76 @@ def fail(data):
 
 
 # 获取图片后缀名
-def getSuffix(filename):
-    tempArr = filename.split('.')
-    suffix = tempArr[-1]
-    fileType = ['jpg', 'jpeg', 'gif', 'png']
-    if len(tempArr) < 2:
+def get_suffix(filename):
+    temp_arr = filename.split('.')
+    suffix = temp_arr[-1]
+    file_type = ['jpg', 'jpeg', 'gif', 'png']
+    if len(temp_arr) < 2:
         return 'error name'
-    elif suffix not in fileType:
+    elif suffix not in file_type:
         return 'error type'
     else:
         return suffix
 
 
 # 检查请求地址是否授权
-def checkHost(host):
-    for i in allowHost:
+def check_host(host):
+    for i in allow_host:
         if i in host:
             return True
     return False
 
 
 # 上传图片文件接口
-@app.route('/api/v1/upimg', methods=['POST'])
+@app.route('/api/upimg', methods=['POST'])
 async def upimg(request):
     # 判断用户是否具有上传权限
     if request.headers.get('token') != token:
-        return fail('您没有使用本服务的权限')
+        return fail('Permission error')
     image = request.files.get('file').body
     # 判断文件是否支持
-    imageName = request.files.get('file').name
-    imageSuffix = getSuffix(imageName)
-    if 'error' in imageSuffix:
-        return fail(imageSuffix)
+    image_name = request.files.get('file').name
+    image_suffix = get_suffix(image_name)
+    if 'error' in image_suffix:
+        return fail(image_suffix)
     # 组织图片存储路径
     m1 = hashlib.md5()
     m1.update(image)
-    md5Name = m1.hexdigest()
+    md5_name = m1.hexdigest()
 
     # 用 md5 的前两位来建文件夹，防止单个文件夹下图片过多，又或者根目录下建立太多的文件夹
-    saveDir = baseDir + md5Name[0:2] + '/'
-    savePath = saveDir + md5Name[2:] + '.' + imageSuffix
-    resPath = '/' + md5Name[0:2] + '/' + md5Name[2:] + '.' + imageSuffix
+    save_dir = base_dir + md5_name[0:2] + '/'
+    save_path = save_dir + md5_name[2:] + '.' + image_suffix
+    res_path = '/' + md5_name[0:2] + '/' + md5_name[2:] + '.' + image_suffix
 
     # 如果文件夹不存在，就创建文件夹
-    if not os.path.exists(saveDir):
-        os.makedirs(saveDir)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
     # 将文件写入到硬盘
-    tempFile = open(savePath, 'wb')
-    tempFile.write(image)
-    tempFile.close()
+    temp_file = open(save_path, 'wb')
+    temp_file.write(image)
+    temp_file.close()
 
     # 给客户端返回结果
-    return ok({"path": resPath})
+    return ok({"path": res_path})
 
 
 # 请求图片接口
-@app.route('/', methods=['GET'])
+@app.route('/api/img', methods=['GET'])
 async def img(request):
     # 判断是否为网站请求，否则就加上自定义的字符串（允许本地访问）
     host = request.headers.get('referer') or 'ilovethisword'
     # 判断请求接口是否带参数，否则加上自定义字符串（没有这个文件夹，返回404）
     args = request.args.get('path') or 'ilovemywife'
     # 拼接文件地址
-    path = baseDir + args
+    path = base_dir + args
     # 如果不在允许列表，则展示 401 图片
-    if not checkHost(host):
-        path = baseDir + '401.png'
+    if not check_host(host):
+        path = base_dir + 'd4/f187d215e76cef045d5901a640c447.png'
     # 如果文件不存在，则展示 404 图片
     if not os.path.exists(path):
-        path = baseDir + '404.png'
+        path = base_dir + 'd8/3355bb194482d837a18b85fd7d9cde.png'
     # 返回文件
     return await file(path)
 
