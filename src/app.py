@@ -7,6 +7,7 @@
 @time: 2/12/20 9:48 PM
 @desc:
 """
+import re
 from sanic import Sanic
 from sanic.response import json, file
 import os
@@ -104,13 +105,13 @@ async def img(request):
     # 判断请求接口是否带参数，否则加上自定义字符串（没有这个文件夹，返回404）
     args = request.args.get('path') or 'ilovexinyue'
     # 拼接文件地址
-    path = base_dir + args
+    path = os.path.join(base_dir, re.sub('^/', '', args))
     # 如果不在允许列表，则展示 401 图片
     if not check_host(host):
-        path = base_dir + '/d4/f187d215e76cef045d5901a640c447.png'
+        path = os.path.join(base_dir, 'd4/f187d215e76cef045d5901a640c447.png')
     # 如果文件不存在，则展示 404 图片
     if not os.path.exists(path):
-        path = base_dir + '/d8/3355bb194482d837a18b85fd7d9cde.png'
+        path = os.path.join(base_dir, 'd8/3355bb194482d837a18b85fd7d9cde.png')
     # 返回文件
     return await file(path)
 

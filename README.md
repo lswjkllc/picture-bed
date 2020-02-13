@@ -17,5 +17,7 @@ curl http://__DOMAIN__/api/upimg -F "file=@__UPFILE_PATH__" -H "token: __TOKEN__
 
 获取图片
 ```angular2html
-http://localhost:8000/api/img?path=d4/f187d215e76cef045d5901a640c447.png
+http://__DOMAIN__/api/img?path=__FILE_PATH__
 ```
+* __DOMAIN__ 与 **上传图片** 一致
+* __FILE_PATH__ 表示需要访问的图片路径，该路径是一个相对路径
