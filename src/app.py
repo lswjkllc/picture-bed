@@ -8,23 +8,23 @@
 @desc:
 """
 from sanic import Sanic
-from sanic.response import json, text, file
-import os, sys
+from sanic.response import json, file
+import os
 import hashlib
-import base64
+import pathlib
+
 
 app = Sanic()
 # 图片存储目录
-base_dir = os.path.join(sys.path[0], '../static/image/')
+parent_dir = str(pathlib.Path(__file__).resolve().parents[1])
+base_dir = os.path.join(parent_dir, 'static/image')
 # 校验 Token 写死就成，反正自己用的嘛
 token = 'ChanEcho'
 # 允许的域名列表
 allow_host = [
-            'localhost',
-            'ilovethisword',
-            'i.fengcss.com',
-            'blog.csdn.net'
-        ]
+    'localhost',
+    'ilovechanecho',
+]
 
 
 # 成功返回方法
@@ -79,8 +79,8 @@ async def upimg(request):
     md5_name = m1.hexdigest()
 
     # 用 md5 的前两位来建文件夹，防止单个文件夹下图片过多，又或者根目录下建立太多的文件夹
-    save_dir = base_dir + md5_name[0:2] + '/'
-    save_path = save_dir + md5_name[2:] + '.' + image_suffix
+    save_dir = os.path.join(base_dir, md5_name[0:2])
+    save_path = os.path.join(save_dir, md5_name[2:] + '.' + image_suffix)
     res_path = '/' + md5_name[0:2] + '/' + md5_name[2:] + '.' + image_suffix
 
     # 如果文件夹不存在，就创建文件夹
@@ -100,17 +100,17 @@ async def upimg(request):
 @app.route('/api/img', methods=['GET'])
 async def img(request):
     # 判断是否为网站请求，否则就加上自定义的字符串（允许本地访问）
-    host = request.headers.get('referer') or 'ilovethisword'
+    host = request.headers.get('referer') or 'ilovechanecho'
     # 判断请求接口是否带参数，否则加上自定义字符串（没有这个文件夹，返回404）
-    args = request.args.get('path') or 'ilovemywife'
+    args = request.args.get('path') or 'ilovexinyue'
     # 拼接文件地址
     path = base_dir + args
     # 如果不在允许列表，则展示 401 图片
     if not check_host(host):
-        path = base_dir + 'd4/f187d215e76cef045d5901a640c447.png'
+        path = base_dir + '/d4/f187d215e76cef045d5901a640c447.png'
     # 如果文件不存在，则展示 404 图片
     if not os.path.exists(path):
-        path = base_dir + 'd8/3355bb194482d837a18b85fd7d9cde.png'
+        path = base_dir + '/d8/3355bb194482d837a18b85fd7d9cde.png'
     # 返回文件
     return await file(path)
 
